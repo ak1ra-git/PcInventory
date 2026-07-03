@@ -1,0 +1,28 @@
+[
+  {
+    "ContainingType": "PcInventory.Controllers.ProdutoController",
+    "Method": "GetAllProdutos",
+    "RelativePath": "api/produtos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PcInventory.Controllers.ProdutoController",
+    "Method": "Adicionar",
+    "RelativePath": "api/produtos",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "produtos",
+        "Type": "PcInventory.Models.Produtos",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

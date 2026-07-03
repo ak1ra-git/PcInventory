@@ -1,0 +1,6 @@
+@PcInventory_HostAddress = http://localhost:5298
+
+GET {{PcInventory_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

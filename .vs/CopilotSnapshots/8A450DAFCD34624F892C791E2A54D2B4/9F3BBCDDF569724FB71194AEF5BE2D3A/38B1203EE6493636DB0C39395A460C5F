@@ -1,0 +1,21 @@
+﻿using PcInventory.Interfaces;
+using PcInventory.Models;
+
+namespace PcInventory.Services
+{
+    public class ProdutoService
+    {
+        public class ProdutoService : IProdutoService
+        {
+            private readonly IProdutoRepository _produtoRepository;
+            public ProdutoService(IProdutoRepository produtoRepository)
+            {
+                _produtoRepository = produtoRepository;
+            }
+            public async Task<IEnumerable<Produto>> GetAllProdutosAsync()
+            {
+                return await _produtoRepository.GetAllAsync();
+            }
+        }
+    }
+}

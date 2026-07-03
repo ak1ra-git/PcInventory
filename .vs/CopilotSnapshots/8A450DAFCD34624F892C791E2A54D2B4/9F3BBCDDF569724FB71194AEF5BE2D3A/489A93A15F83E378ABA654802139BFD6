@@ -1,0 +1,27 @@
+﻿using Dapper;
+using Microsoft.AspNetCore.Connections;
+using PcInventory.Database;
+using PcInventory.Interfaces;
+using PcInventory.Models;
+
+namespace PcInventory.Repositories
+{
+    public class ProdutoRepository : IProdutoRepository
+    {
+        private readonly ConnectionFactory _connectionFactory;
+
+        public ProdutoRepository(ConnectionFactory connectionFactory)
+        {
+            _connectionFactory = connectionFactory;
+        }
+
+        public async Task<IEnumerable<Produto>> ObterTodosAsync()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            const string sql = "SELECT * FROM Produto";
+
+            return await connection.QueryAsync<Produto>(sql);
+        }
+    }
+}

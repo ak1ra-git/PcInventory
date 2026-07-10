@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PcInventory.Interfaces;
 
@@ -5,6 +6,7 @@ namespace PcInventory.Controllers
 {
     [ApiController]
     [Route("api/pedidos/{codPedido}/itens")]
+    [Authorize]
     public class ItensPedidoController : ControllerBase
     {
         private readonly IItensPedidoService _itensPedidoService;

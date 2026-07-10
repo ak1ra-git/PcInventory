@@ -1,8 +1,11 @@
-﻿namespace PcInventory.DTOs
+﻿namespace PcInventory.DTOs;
+
+/// <summary>
+/// DTO para criar novo produto
+/// </summary>
+public class CreateProdutoDto
 {
-    // DTO usado para representar os dados necessários para criar um produto.
-    // Atualmente está vazio, mas pode ser estendido com propriedades de entrada específicas.
-    public class CreateProdutoDto
-    {
-    }
+    public required string Nome { get; set; }
+    public required decimal Preco { get; set; }
+    public required int Estoque { get; set; }
 }

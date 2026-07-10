@@ -7,5 +7,6 @@
         public int CodProduto { get; set; } // FK para o produto.
         public int Quantidade { get; set; } // Quantidade comprada desse produto.
         public decimal PrecoUnitario { get; set; } // Preço do produto no momento da compra.
+        public string? NomeProduto { get; set; } // Nome do produto (apenas na leitura, de um JOIN).
     }
 }

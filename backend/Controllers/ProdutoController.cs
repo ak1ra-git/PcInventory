@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PcInventory.Interfaces;
 using PcInventory.Models;
 
@@ -6,6 +7,7 @@ namespace PcInventory.Controllers
 {
     [ApiController]
     [Route("api/produtos")]
+    [Authorize]
     public class ProdutoController : ControllerBase
     {
         private readonly IProdutoService _produtoService;

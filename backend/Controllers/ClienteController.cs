@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using PcInventory.Interfaces;
 using PcInventory.Models;
@@ -7,6 +8,7 @@ namespace PcInventory.Controllers
 {
     [ApiController]
     [Route("api/clientes")]
+    [Authorize]
     public class ClienteController : ControllerBase
     {
         private readonly IClienteService _clienteService;

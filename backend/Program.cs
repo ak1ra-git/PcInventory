@@ -1,3 +1,6 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using PcInventory.Database;
 using PcInventory.Interfaces;
 using PcInventory.Repositories;
@@ -33,6 +36,34 @@ builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IItensPedidoRepository, ItensPedidoRepository>();
 builder.Services.AddScoped<IItensPedidoService, ItensPedidoService>();
 
+// Registra o serviço de autenticação JWT
+builder.Services.AddScoped<AuthService>();
+
+// Configura autenticação JWT
+var jwtSecretKey = builder.Configuration["Jwt:SecretKey"]
+    ?? throw new InvalidOperationException("JWT SecretKey is not configured");
+var key = Encoding.ASCII.GetBytes(jwtSecretKey);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "PcInventory",
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["Jwt:Audience"] ?? "PcInventoryClient",
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
 // Define uma política de CORS liberando o front-end Next.js
 builder.Services.AddCors(options =>
 {
@@ -56,8 +87,10 @@ app.UseHttpsRedirection();
 // Aplica a política de CORS definida anteriormente, permitindo que o front-end acesse a API.
 app.UseCors("PermitirFrontend");
 
-// Habilita a autorização. Neste projeto não há autenticação configurada,
-// mas a chamada é mantida para suportar regras futuras.
+// Habilita autenticação JWT
+app.UseAuthentication();
+
+// Habilita a autorização
 app.UseAuthorization();
 
 // Registra os controllers como endpoints da API.

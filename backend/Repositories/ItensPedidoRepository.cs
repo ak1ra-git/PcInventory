@@ -19,7 +19,11 @@ namespace PcInventory.Repositories
             using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            const string sql = "SELECT * FROM ItensPedidos WHERE CodPedido = @CodPedido";
+            const string sql = @"
+                SELECT ip.CodPedido, ip.CodProduto, ip.Quantidade, ip.PrecoUnitario, pr.Nome AS NomeProduto
+                FROM ItensPedidos ip
+                LEFT JOIN Produtos pr ON ip.CodProduto = pr.CodProduto
+                WHERE ip.CodPedido = @CodPedido";
             return await connection.QueryAsync<ItensPedidos>(sql, new { CodPedido = codPedido });
         }
 

@@ -27,7 +27,8 @@ namespace PcInventory.Repositories
         {
             using var connection = ConnectionFactory.CreateConnection();
             await connection.OpenAsync();
-            return await connection.QueryFirstOrDefaultAsync<Pedido>("SELECT * FROM Pedido WHERE CodPedido = @CodPedido", new { CodPedido = id });
+            var pedido = await connection.QueryFirstOrDefaultAsync<Pedido>("SELECT * FROM Pedido WHERE CodPedido = @CodPedido", new { CodPedido = id });
+            return pedido;
         }
 
         public async Task<int> AdicionarAsync(Pedido pedido)

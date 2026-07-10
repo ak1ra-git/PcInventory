@@ -33,10 +33,13 @@ namespace PcInventory.Services
             // Data do pedido é definida pelo sistema, não pelo cliente.
             pedido.DataPedido = DateTime.Now;
 
-            // Inicializa o valor total em zero, pois os itens ainda não foram adicionados.
-            pedido.ValorTotal = 0;
+            // Se o valor total não foi informado, inicializa em zero
+            if (pedido.ValorTotal < 0)
+                pedido.ValorTotal = 0;
 
-            return await _pedidoRepository.AdicionarAsync(pedido);
+            var id = await _pedidoRepository.AdicionarAsync(pedido);
+            pedido.CodPedido = id;
+            return id;
         }
 
         public async Task<bool> AtualizarAsync(Pedido pedido)

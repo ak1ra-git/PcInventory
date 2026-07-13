@@ -209,14 +209,4 @@ Rotas protegidas verificam autenticação no cliente e redirecionam para `/login
 2. Configure variáveis de ambiente
 3. Deploy automático em push para `main`
 
-## 📞 Contato & Suporte
-
-Para reportar bugs ou sugestões, abra uma issue no repositório.
-
-## 📄 Licença
-
-MIT - Livre para usar e modificar
-
----
-
-**Desenvolvido com ❤️ usando ASP.NET Core + Next.js**
+**Desenvolvido por Mateus! ultilizando ASP.NET Core + Next.js**

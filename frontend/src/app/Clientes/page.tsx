@@ -236,15 +236,14 @@ export default function ClientsPage() {
           />
           <Input
             label="CNPJ"
-            placeholder="00.000.000/0000-00"
-            mask="cnpj"
+            placeholder="00000000000000"
+            type="text"
+            inputMode="numeric"
             value={formData.cnpj}
-            onUnmaskedChange={(unmasked) =>
-              setFormData({
-                ...formData,
-                cnpj: unmasked,
-              })
-            }
+            onChange={(e) => {
+              const numbers = e.target.value.replace(/\D/g, "");
+              setFormData({ ...formData, cnpj: numbers });
+            }}
           />
           <Input
             label="Email"

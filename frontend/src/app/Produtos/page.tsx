@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Produto } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
-import { maskCurrency } from "@/lib/masks";
 import Input from "@/components/Input";
 import Modal from "@/components/Modal";
 

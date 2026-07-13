@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { logout } from "@/lib/auth";
 
 interface NavItem {
@@ -55,11 +55,6 @@ function NavLink({
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -85,14 +80,13 @@ export default function Navbar() {
         </div>
 
         {/* Logout Button */}
-        {isMounted && (
-          <button
-            onClick={logout}
-            className="hidden md:block px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
-          >
-            Sair
-          </button>
-        )}
+        <button
+          onClick={logout}
+          suppressHydrationWarning
+          className="hidden md:block px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
+        >
+          Sair
+        </button>
 
         {/* Mobile Menu Button */}
         <button

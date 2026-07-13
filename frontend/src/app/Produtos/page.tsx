@@ -265,8 +265,8 @@ export default function ProductsPage() {
             placeholder="R$ 0,00"
             mask="currency"
             value={formData.preco}
-            onChange={(e) =>
-              setFormData({ ...formData, preco: e.target.value })
+            onUnmaskedChange={(unmasked) =>
+              setFormData({ ...formData, preco: unmasked })
             }
           />
           <Input

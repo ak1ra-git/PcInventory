@@ -113,9 +113,9 @@ export async function apiFetch<T>(
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       const token = getAccessToken();
-      const headers: HeadersInit = {
+      const headers: Record<string, string> = {
         "Content-Type": "application/json",
-        ...options?.headers,
+        ...(typeof options?.headers === "object" ? (options.headers as Record<string, string>) : {}),
       };
 
       // Adiciona token se disponível (não adiciona em /auth/login)
@@ -124,7 +124,7 @@ export async function apiFetch<T>(
       }
 
       const response = await fetch(`${API_URL}${endpoint}`, {
-        headers,
+        headers: headers as HeadersInit,
         ...options,
       });
 

@@ -64,11 +64,11 @@ export function unmaskDate(value: string): string {
 
 /**
  * Formata valor para moeda BRL
- * Trata como entrada de número com até 2 casas decimais
+ * Trata como entrada normal de reais (ex: 150 = R$ 150,00)
  */
 export function maskCurrency(value: string): string {
   const cleaned = stripNonNumeric(value);
-  const number = parseInt(cleaned || "0", 10) / 100;
+  const number = parseFloat(cleaned || "0");
   return number.toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
@@ -76,7 +76,7 @@ export function maskCurrency(value: string): string {
 }
 
 /**
- * Remove máscara de moeda retornando o valor em centavos (número inteiro)
+ * Remove máscara de moeda retornando apenas números para enviar ao servidor
  */
 export function unmaskCurrency(value: string): string {
   return stripNonNumeric(value);

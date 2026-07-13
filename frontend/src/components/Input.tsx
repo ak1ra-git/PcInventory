@@ -1,6 +1,6 @@
 "use client";
 
-import { InputHTMLAttributes, useState } from "react";
+import { InputHTMLAttributes, useState, useRef } from "react";
 import { maskCnpj, unmaskCnpj, maskCpf, unmaskCpf, maskDate, unmaskDate, maskCurrency, unmaskCurrency } from "@/lib/masks";
 
 type MaskType = "cnpj" | "cpf" | "date" | "currency" | null;
@@ -35,21 +35,30 @@ export default function Input({
   ...props
 }: InputProps) {
   const [displayValue, setDisplayValue] = useState<string>(value?.toString() || "");
+  const inputRef = useRef<HTMLInputElement>(null);
   const maskFns = MASK_FUNCTIONS[mask];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    const maskedValue = maskFns.mask(inputValue);
-    const unmaskedValue = maskFns.unmask(inputValue);
+    const inputElement = inputRef.current;
+    if (!inputElement) return;
 
     // Se não tem máscara, passa o valor como está
     if (!mask) {
       onChange?.(e);
-    } else {
-      // Se tem máscara, usa o valor mascarado
-      setDisplayValue(maskedValue);
-      onUnmaskedChange?.(unmaskedValue);
+      return;
     }
+
+    // Pega apenas o que o usuário digitou (desmascarado)
+    const cursorPos = inputElement.selectionStart || 0;
+    const currentValue = displayValue;
+
+    // Reconstrói o valor removendo tudo e adicionando apenas números
+    const unmaskedInput = maskFns.unmask(e.target.value);
+    const maskedValue = maskFns.mask(unmaskedInput);
+    const unmaskedValue = maskFns.unmask(unmaskedInput);
+
+    setDisplayValue(maskedValue);
+    onUnmaskedChange?.(unmaskedValue);
   };
 
   // Para inputs sem máscara, usa value prop. Para inputs com máscara, usa displayValue
@@ -64,6 +73,7 @@ export default function Input({
       )}
       <input
         {...props}
+        ref={inputRef}
         value={inputValue}
         onChange={handleChange}
         className={`w-full px-4 py-2 border-2 rounded-lg transition-colors focus:outline-none text-black ${

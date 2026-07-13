@@ -1,6 +1,6 @@
 "use client";
 
-import { InputHTMLAttributes, useState, useRef } from "react";
+import { InputHTMLAttributes, useState } from "react";
 import { maskCnpj, unmaskCnpj, maskCpf, unmaskCpf, maskDate, unmaskDate, maskCurrency, unmaskCurrency } from "@/lib/masks";
 
 type MaskType = "cnpj" | "cpf" | "date" | "currency" | null;
@@ -34,31 +34,38 @@ export default function Input({
   value,
   ...props
 }: InputProps) {
-  const [displayValue, setDisplayValue] = useState<string>(value?.toString() || "");
-  const inputRef = useRef<HTMLInputElement>(null);
   const maskFns = MASK_FUNCTIONS[mask];
+  const [displayValue, setDisplayValue] = useState<string>(value?.toString() || "");
+  const [lastUnmaskedValue, setLastUnmaskedValue] = useState<string>(maskFns.unmask(value?.toString() || ""));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputElement = inputRef.current;
-    if (!inputElement) return;
-
     // Se não tem máscara, passa o valor como está
     if (!mask) {
       onChange?.(e);
       return;
     }
 
-    // Pega apenas o que o usuário digitou (desmascarado)
-    const cursorPos = inputElement.selectionStart || 0;
-    const currentValue = displayValue;
+    // Extrai apenas números do que foi digitado
+    const inputUnmasked = maskFns.unmask(e.target.value);
 
-    // Reconstrói o valor removendo tudo e adicionando apenas números
-    const unmaskedInput = maskFns.unmask(e.target.value);
-    const maskedValue = maskFns.mask(unmaskedInput);
-    const unmaskedValue = maskFns.unmask(unmaskedInput);
+    // Evita o problema de concatenação: se o novo valor é muito maior que o esperado,
+    // provavelmente houve concatenação. Pega apenas os últimos dígitos que fazem sentido.
+    let correctedValue = inputUnmasked;
 
-    setDisplayValue(maskedValue);
-    onUnmaskedChange?.(unmaskedValue);
+    // Se o comprimento aumentou mais que 1 dígito, remova números duplicados do início
+    if (inputUnmasked.length > lastUnmaskedValue.length + 1) {
+      // Pegue apenas os últimos N caracteres onde N é o comprimento anterior + 1
+      const expectedLength = lastUnmaskedValue.length + 1;
+      correctedValue = inputUnmasked.slice(-expectedLength);
+    }
+
+    // Aplica a máscara
+    const newMasked = maskFns.mask(correctedValue);
+    const newUnmasked = maskFns.unmask(correctedValue);
+
+    setDisplayValue(newMasked);
+    setLastUnmaskedValue(newUnmasked);
+    onUnmaskedChange?.(newUnmasked);
   };
 
   // Para inputs sem máscara, usa value prop. Para inputs com máscara, usa displayValue
@@ -73,9 +80,9 @@ export default function Input({
       )}
       <input
         {...props}
-        ref={inputRef}
         value={inputValue}
         onChange={handleChange}
+        inputMode={mask ? "numeric" : undefined}
         className={`w-full px-4 py-2 border-2 rounded-lg transition-colors focus:outline-none text-black ${
           error
             ? "border-red-500 focus:border-red-600 bg-red-50"

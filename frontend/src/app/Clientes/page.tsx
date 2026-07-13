@@ -239,10 +239,10 @@ export default function ClientsPage() {
             placeholder="00.000.000/0000-00"
             mask="cnpj"
             value={formData.cnpj}
-            onChange={(e) =>
+            onUnmaskedChange={(unmasked) =>
               setFormData({
                 ...formData,
-                cnpj: e.target.value,
+                cnpj: unmasked,
               })
             }
           />

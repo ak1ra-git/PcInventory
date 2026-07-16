@@ -235,11 +235,14 @@ function HomeContent() {
           </p>
           <Input
             label="CNPJ"
-            placeholder="00.000.000/0000-00"
-            mask="cnpj"
+            placeholder="00000000000000"
+            type="text"
+            inputMode="numeric"
             value={cnpj}
-            onChange={(e) => setCnpj(e.target.value)}
-            onUnmaskedChange={(unmasked) => setCnpj(unmasked)}
+            onChange={(e) => {
+              const numbers = e.target.value.replace(/\D/g, "");
+              setCnpj(numbers);
+            }}
           />
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button

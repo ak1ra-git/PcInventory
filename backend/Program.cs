@@ -38,33 +38,7 @@ builder.Services.AddScoped<IItensPedidoService, ItensPedidoService>();
 
 builder.Services.AddScoped<UserRepository>();
 
-// Registra o serviço de autenticação JWT
-builder.Services.AddScoped<AuthService>();
-
-// Configura autenticação JWT
-var jwtSecretKey = builder.Configuration["Jwt:SecretKey"]
-    ?? throw new InvalidOperationException("JWT SecretKey is not configured");
-var key = Encoding.ASCII.GetBytes(jwtSecretKey);
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "PcInventory",
-        ValidateAudience = true,
-        ValidAudience = builder.Configuration["Jwt:Audience"] ?? "PcInventoryClient",
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
-    };
-});
+// TODO: Reativar autenticação JWT quando o login estiver pronto
 
 // Define uma política de CORS liberando o front-end Next.js
 builder.Services.AddCors(options =>
@@ -89,11 +63,9 @@ app.UseHttpsRedirection();
 // Aplica a política de CORS definida anteriormente, permitindo que o front-end acesse a API.
 app.UseCors("PermitirFrontend");
 
-// Habilita autenticação JWT
-app.UseAuthentication();
-
-// Habilita a autorização
-app.UseAuthorization();
+// TODO: Reativar autenticação e autorização quando o login estiver pronto
+// app.UseAuthentication();
+// app.UseAuthorization();
 
 // Registra os controllers como endpoints da API.
 app.MapControllers();

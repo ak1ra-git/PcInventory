@@ -21,20 +21,15 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Autentica usuário e retorna access token + refresh token
     /// </summary>
-    /// <remarks>
-    /// Usuários de teste:
-    /// - admin@pcinventory.com / admin123
-    /// - user@pcinventory.com / user123
-    /// </remarks>
     [HttpPost("login")]
-    public ActionResult<AuthResponse> Login([FromBody] LoginRequest request)
+    public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-            return BadRequest(new { mensagem = "Email e senha são obrigatórios" });
+        if (string.IsNullOrWhiteSpace(request.Usuario) || string.IsNullOrWhiteSpace(request.Password))
+            return BadRequest(new { mensagem = "Usuário e senha são obrigatórios" });
 
-        var response = _authService.Authenticate(request.Email, request.Password);
+        var response = await _authService.AuthenticateAsync(request.Usuario, request.Password);
         if (response == null)
-            return Unauthorized(new { mensagem = "Email ou senha inválidos" });
+            return Unauthorized(new { mensagem = "Usuário ou senha inválidos" });
 
         return Ok(response);
     }
@@ -43,14 +38,14 @@ public class AuthController : ControllerBase
     /// Renova access token usando refresh token
     /// </summary>
     [HttpPost("refresh")]
-    public ActionResult<AuthResponse> Refresh([FromBody] string email)
+    public async Task<ActionResult<AuthResponse>> Refresh([FromBody] string usuario)
     {
-        if (string.IsNullOrWhiteSpace(email))
-            return BadRequest(new { mensagem = "Email é obrigatório" });
+        if (string.IsNullOrWhiteSpace(usuario))
+            return BadRequest(new { mensagem = "Usuário é obrigatório" });
 
-        var accessToken = _authService.RefreshAccessToken(email);
+        var accessToken = await _authService.RefreshAccessTokenAsync(usuario);
         if (accessToken == null)
-            return Unauthorized(new { mensagem = "Email inválido" });
+            return Unauthorized(new { mensagem = "Usuário inválido" });
 
         return Ok(new AuthResponse
         {

@@ -36,6 +36,8 @@ builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IItensPedidoRepository, ItensPedidoRepository>();
 builder.Services.AddScoped<IItensPedidoService, ItensPedidoService>();
 
+builder.Services.AddScoped<UserRepository>();
+
 // Registra o serviço de autenticação JWT
 builder.Services.AddScoped<AuthService>();
 

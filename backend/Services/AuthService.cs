@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using PcInventory.DTOs;
 using PcInventory.Models;
+using PcInventory.Repositories;
 
 namespace PcInventory.Services;
 
@@ -16,44 +17,48 @@ public class AuthService
     private readonly string _jwtSecretKey;
     private readonly string _jwtIssuer;
     private readonly string _jwtAudience;
+    private readonly UserRepository _userRepository;
     private const int AccessTokenExpirationMinutes = 15;
     private const int RefreshTokenExpirationDays = 7;
 
-    // Usuários mock para demonstração (substituir por DB em produção)
+    // TODO: Remover MockUsers quando o banco estiver funcionando
     private static readonly List<User> MockUsers = new()
     {
         new User
         {
             Id = 1,
-            Email = "admin@pcinventory.com",
-            Name = "Administrador",
-            PasswordHash = HashPassword("admin123"),
+            Usuario = "MateusNascimento",
+            Name = "Mateus Nascimento",
+            PasswordHash = "EQ9MIeXKFNbI5nkeF2mMJEeDf0/lvRDESh3S4rx0zmWnAmgI",
             CreatedAt = DateTime.UtcNow
         },
         new User
         {
             Id = 2,
-            Email = "user@pcinventory.com",
-            Name = "Usuário Teste",
-            PasswordHash = HashPassword("user123"),
+            Usuario = "AkiraOliveira",
+            Name = "Akira Oliveira",
+            PasswordHash = "HW79PWuXGq2JmAP2rUxcWOcyPNVrJ8+IZw32fXZ/txBSwLM7",
             CreatedAt = DateTime.UtcNow
         }
     };
 
-    public AuthService(IConfiguration configuration)
+    public AuthService(IConfiguration configuration, UserRepository? userRepository = null)
     {
         _jwtSecretKey = configuration["Jwt:SecretKey"]
             ?? throw new ArgumentNullException(nameof(configuration), "Jwt:SecretKey not configured");
         _jwtIssuer = configuration["Jwt:Issuer"] ?? "PcInventory";
         _jwtAudience = configuration["Jwt:Audience"] ?? "PcInventoryClient";
+        _userRepository = userRepository;
     }
 
     /// <summary>
     /// Autentica usuário e retorna tokens JWT
     /// </summary>
-    public AuthResponse? Authenticate(string email, string password)
+    public async Task<AuthResponse?> AuthenticateAsync(string usuario, string password)
     {
-        var user = MockUsers.FirstOrDefault(u => u.Email == email);
+        // TODO: Usar repository quando o banco estiver funcionando
+        var user = MockUsers.FirstOrDefault(u => u.Usuario == usuario);
+
         if (user == null || !VerifyPassword(password, user.PasswordHash))
             return null;
 
@@ -72,9 +77,10 @@ public class AuthService
     /// <summary>
     /// Gera novo access token a partir de refresh token
     /// </summary>
-    public string? RefreshAccessToken(string email)
+    public async Task<string?> RefreshAccessTokenAsync(string usuario)
     {
-        var user = MockUsers.FirstOrDefault(u => u.Email == email);
+        // TODO: Usar repository quando o banco estiver funcionando
+        var user = MockUsers.FirstOrDefault(u => u.Usuario == usuario);
         return user != null ? GenerateAccessToken(user) : null;
     }
 
@@ -121,7 +127,7 @@ public class AuthService
             Subject = new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Email, user.Usuario),
                 new Claim(ClaimTypes.Name, user.Name)
             }),
             Expires = DateTime.UtcNow.AddMinutes(AccessTokenExpirationMinutes),

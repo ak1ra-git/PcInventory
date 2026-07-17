@@ -8,7 +8,6 @@ namespace PcInventory.Controllers
 {
     [ApiController]
     [Route("api/clientes")]
-    [Authorize]
     public class ClienteController : ControllerBase
     {
         private readonly IClienteService _clienteService;

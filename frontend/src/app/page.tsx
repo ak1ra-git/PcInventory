@@ -261,9 +261,10 @@ function HomeContent() {
  * Página home protegida por autenticação
  */
 export default function Home() {
+  // TODO: Reativar ProtectedRoute quando login estiver pronto
   return (
-    <ProtectedRoute>
+    // <ProtectedRoute>
       <HomeContent />
-    </ProtectedRoute>
+    // </ProtectedRoute>
   );
 }

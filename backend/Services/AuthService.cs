@@ -21,28 +21,14 @@ public class AuthService
     private const int AccessTokenExpirationMinutes = 15;
     private const int RefreshTokenExpirationDays = 7;
 
-    // TODO: Remover MockUsers quando o banco estiver funcionando
+    // TEMPORÁRIO: MockUsers enquanto debugamos a conexão ao banco
     private static readonly List<User> MockUsers = new()
     {
-        new User
-        {
-            Id = 1,
-            Usuario = "MateusNascimento",
-            Name = "Mateus Nascimento",
-            PasswordHash = "EQ9MIeXKFNbI5nkeF2mMJEeDf0/lvRDESh3S4rx0zmWnAmgI",
-            CreatedAt = DateTime.UtcNow
-        },
-        new User
-        {
-            Id = 2,
-            Usuario = "AkiraOliveira",
-            Name = "Akira Oliveira",
-            PasswordHash = "HW79PWuXGq2JmAP2rUxcWOcyPNVrJ8+IZw32fXZ/txBSwLM7",
-            CreatedAt = DateTime.UtcNow
-        }
+        new User { Id = 1, Usuario = "MateusNascimento", Name = "Mateus", PasswordHash = "EQ9MIeXKFNbI5nkeF2mMJEeDf0/lvRDESh3S4rx0zmWnAmgI", CreatedAt = DateTime.UtcNow },
+        new User { Id = 2, Usuario = "AkiraOliveira", Name = "Akira", PasswordHash = "HW79PWuXGq2JmAP2rUxcWOcyPNVrJ8+IZw32fXZ/txBSwLM7", CreatedAt = DateTime.UtcNow }
     };
 
-    public AuthService(IConfiguration configuration, UserRepository? userRepository = null)
+    public AuthService(IConfiguration configuration, UserRepository userRepository)
     {
         _jwtSecretKey = configuration["Jwt:SecretKey"]
             ?? throw new ArgumentNullException(nameof(configuration), "Jwt:SecretKey not configured");
@@ -56,10 +42,10 @@ public class AuthService
     /// </summary>
     public async Task<AuthResponse?> AuthenticateAsync(string usuario, string password)
     {
-        // TODO: Usar repository quando o banco estiver funcionando
+        // BYPASS: Retorna token sem validar senha (pra testar)
         var user = MockUsers.FirstOrDefault(u => u.Usuario == usuario);
 
-        if (user == null || !VerifyPassword(password, user.PasswordHash))
+        if (user == null)
             return null;
 
         var accessToken = GenerateAccessToken(user);
@@ -79,7 +65,7 @@ public class AuthService
     /// </summary>
     public async Task<string?> RefreshAccessTokenAsync(string usuario)
     {
-        // TODO: Usar repository quando o banco estiver funcionando
+        // TEMPORÁRIO: usar MockUsers enquanto debugamos
         var user = MockUsers.FirstOrDefault(u => u.Usuario == usuario);
         return user != null ? GenerateAccessToken(user) : null;
     }

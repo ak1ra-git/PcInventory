@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Pedido, ItemPedido } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
@@ -41,12 +41,15 @@ function formatCurrency(value: number): string {
  */
 export default function PedidoDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const pedidoId = params.id as string;
 
   const [pedido, setPedido] = useState<Pedido | null>(null);
   const [items, setItems] = useState<ItemPedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!pedidoId) return;
@@ -72,6 +75,22 @@ export default function PedidoDetailsPage() {
 
     fetchPedidoDetails();
   }, [pedidoId]);
+
+  const handleDelete = async () => {
+    try {
+      setDeleting(true);
+      await apiFetch(`/pedidos/${pedidoId}`, {
+        method: "DELETE",
+      });
+      alert("✅ Pedido deletado com sucesso! Estoque restaurado.");
+      router.push("/");
+    } catch (err) {
+      setError(getErrorMessage(err, "Erro ao deletar pedido"));
+      setShowDeleteModal(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -110,11 +129,19 @@ export default function PedidoDetailsPage() {
       </div>
 
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-black mb-2">
-          Pedido #{pedido.codPedido}
-        </h1>
-        <p className="text-white">{formattedDate}</p>
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-4xl font-bold text-black mb-2">
+            Pedido #{pedido.codPedido}
+          </h1>
+          <p className="text-white">{formattedDate}</p>
+        </div>
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        >
+          🗑️ Deletar Pedido
+        </button>
       </div>
 
       {/* Informações do Pedido */}
@@ -205,6 +232,42 @@ export default function PedidoDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Confirmação */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md">
+            <h2 className="text-2xl font-bold text-black mb-4">
+              ⚠️ Deletar Pedido?
+            </h2>
+            <p className="text-gray-700 mb-2">
+              O pedido está vinculado a um cliente.
+            </p>
+            <p className="text-gray-700 mb-6">
+              Tem certeza que deseja excluir este pedido?
+            </p>
+            <p className="text-sm text-green-600 font-semibold mb-6">
+              ✅ O estoque será restaurado automaticamente
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+              >
+                {deleting ? "Deletando..." : "Deletar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

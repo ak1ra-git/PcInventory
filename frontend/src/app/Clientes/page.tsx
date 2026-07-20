@@ -260,10 +260,10 @@ export default function ClientsPage() {
           />
           <Input
             label="CNPJ"
-            placeholder="00000000000000"
+            placeholder="00.000.000/0000-00"
             type="text"
             inputMode="numeric"
-            value={formData.cnpj}
+            value={maskCnpj(formData.cnpj)}
             onChange={(e) => {
               const numbers = e.target.value.replace(/\D/g, "");
               setFormData({ ...formData, cnpj: numbers });

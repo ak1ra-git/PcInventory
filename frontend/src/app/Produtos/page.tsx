@@ -374,16 +374,29 @@ export default function ProductsPage() {
               setFormData({ ...formData, nome: e.target.value })
             }
           />
-          <Input
-            label="Preço"
-            type="number"
-            step="0.01"
-            placeholder="150.00"
-            value={formData.preco}
-            onChange={(e) =>
-              setFormData({ ...formData, preco: e.target.value })
-            }
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Preço
+            </label>
+            <div className="flex gap-2 items-center">
+              <Input
+                placeholder="0.00"
+                type="number"
+                step="0.01"
+                inputMode="decimal"
+                value={formData.preco}
+                onChange={(e) =>
+                  setFormData({ ...formData, preco: e.target.value })
+                }
+                className="flex-1"
+              />
+              <span className="text-lg font-semibold text-green-600 min-w-max">
+                {formData.preco
+                  ? maskCurrency(formData.preco)
+                  : "R$ 0,00"}
+              </span>
+            </div>
+          </div>
           <Input
             label="Estoque"
             type="number"

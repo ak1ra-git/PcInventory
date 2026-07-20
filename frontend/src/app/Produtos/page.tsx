@@ -376,14 +376,13 @@ export default function ProductsPage() {
           />
           <Input
             label="Preço"
-            type="text"
-            inputMode="decimal"
-            placeholder="R$ 0,00"
-            value={maskCurrency(formData.preco)}
-            onChange={(e) => {
-              const numbers = e.target.value.replace(/\D/g, "");
-              setFormData({ ...formData, preco: numbers });
-            }}
+            type="number"
+            step="0.01"
+            placeholder="150.00"
+            value={formData.preco}
+            onChange={(e) =>
+              setFormData({ ...formData, preco: e.target.value })
+            }
           />
           <Input
             label="Estoque"

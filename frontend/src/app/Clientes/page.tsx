@@ -55,6 +55,13 @@ export default function ClientsPage() {
     isOpen: false,
     clientId: null as number | null,
   });
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filtra clientes por nome ou CNPJ
+  const filteredClients = clients.filter((client) =>
+    client.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.cnpj.includes(searchTerm.replace(/\D/g, ""))
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -194,6 +201,15 @@ export default function ClientsPage() {
         </button>
       </div>
 
+      {/* Search */}
+      <div className="mb-8">
+        <Input
+          placeholder="🔍 Buscar cliente por nome ou CNPJ..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       {/* Clients List */}
       {loading ? (
         <div className="text-center py-12">
@@ -203,6 +219,10 @@ export default function ClientsPage() {
       ) : clients.length === 0 ? (
         <div className="bg-gray-100 rounded-lg p-12 text-center">
           <p className="text-white">Nenhum cliente cadastrado</p>
+        </div>
+      ) : filteredClients.length === 0 ? (
+        <div className="bg-gray-100 rounded-lg p-12 text-center">
+          <p className="text-white">Nenhum cliente encontrado com "{searchTerm}"</p>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -224,7 +244,7 @@ export default function ClientsPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {clients.map((client) => (
+              {filteredClients.map((client) => (
                 <tr
                   key={client.codCliente}
                   className="hover:bg-gray-50 transition-colors"
@@ -255,7 +275,7 @@ export default function ClientsPage() {
       )}
 
       {/* Pagination */}
-      {!loading && clients.length > 0 && (
+      {!loading && clients.length > 0 && filteredClients.length > 0 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

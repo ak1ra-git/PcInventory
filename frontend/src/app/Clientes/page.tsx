@@ -6,6 +6,8 @@ import { apiFetch } from "@/lib/api";
 import { maskCnpj } from "@/lib/masks";
 import Input from "@/components/Input";
 import Modal from "@/components/Modal";
+import ErrorModal from "@/components/ErrorModal";
+import ConfirmModal from "@/components/ConfirmModal";
 
 const API_ENDPOINTS = {
   CLIENTES: "/clientes?pagina=1&tamanho=50",
@@ -44,6 +46,11 @@ export default function ClientsPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [errorModal, setErrorModal] = useState({ isOpen: false, message: "" });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    clientId: null as number | null,
+  });
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -55,7 +62,10 @@ export default function ClientsPage() {
         const response = await apiFetch<{ data: Cliente[] }>(API_ENDPOINTS.CLIENTES);
         setClients(response?.data || []);
       } catch (err) {
-        setError(getErrorMessage(err, "Erro ao carregar clientes"));
+        setErrorModal({
+          isOpen: true,
+          message: getErrorMessage(err, "Erro ao carregar clientes"),
+        });
       } finally {
         setLoading(false);
       }
@@ -72,7 +82,10 @@ export default function ClientsPage() {
       const response = await apiFetch<{ data: Cliente[] }>(API_ENDPOINTS.CLIENTES);
       setClients(response?.data || []);
     } catch (err) {
-      setError(getErrorMessage(err, "Erro ao carregar clientes"));
+      setErrorModal({
+        isOpen: true,
+        message: getErrorMessage(err, "Erro ao carregar clientes"),
+      });
     }
   };
 
@@ -108,26 +121,41 @@ export default function ClientsPage() {
       setFormData(FORM_INITIAL_STATE);
       await reloadClients();
     } catch (err) {
-      setFormError(getErrorMessage(err, "Erro ao criar cliente"));
+      setErrorModal({
+        isOpen: true,
+        message: getErrorMessage(err, "Erro ao criar cliente"),
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   /**
+   * Abre modal de confirmação para deletar cliente
+   */
+  const handleOpenDeleteConfirm = (clientId: number) => {
+    setConfirmModal({ isOpen: true, clientId });
+  };
+
+  /**
    * Deleta um cliente após confirmação do usuário
    */
-  const handleDeleteClient = async (clientId: number) => {
-    if (!confirm("Tem certeza que deseja excluir este cliente?")) return;
+  const handleConfirmDelete = async () => {
+    const clientId = confirmModal.clientId;
+    if (!clientId) return;
 
     try {
       setDeletingId(clientId);
+      setConfirmModal({ isOpen: false, clientId: null });
       await apiFetch(`${API_ENDPOINTS.CLIENTES_BASE}/${clientId}`, {
         method: "DELETE",
       });
       await reloadClients();
     } catch (err) {
-      setError(getErrorMessage(err, "Erro ao deletar cliente"));
+      setErrorModal({
+        isOpen: true,
+        message: getErrorMessage(err, "Erro ao deletar cliente"),
+      });
     } finally {
       setDeletingId(null);
     }
@@ -156,10 +184,6 @@ export default function ClientsPage() {
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
           <p className="text-white mt-4">Carregando clientes...</p>
-        </div>
-      ) : error ? (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-          {error}
         </div>
       ) : clients.length === 0 ? (
         <div className="bg-gray-100 rounded-lg p-12 text-center">
@@ -201,7 +225,7 @@ export default function ClientsPage() {
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <button
-                      onClick={() => handleDeleteClient(client.codCliente)}
+                      onClick={() => handleOpenDeleteConfirm(client.codCliente)}
                       disabled={deletingId === client.codCliente}
                       className="text-red-600 hover:text-red-700 disabled:text-gray-400 font-medium transition-colors"
                     >
@@ -266,6 +290,23 @@ export default function ClientsPage() {
           </button>
         </form>
       </Modal>
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Deletar Cliente?"
+        message="Tem certeza que deseja excluir este cliente?"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, clientId: null })}
+        isLoading={deletingId !== null}
+      />
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.message}
+        onClose={() => setErrorModal({ isOpen: false, message: "" })}
+      />
     </div>
   );
 }

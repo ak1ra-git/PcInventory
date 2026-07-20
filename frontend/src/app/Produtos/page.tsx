@@ -9,6 +9,7 @@ import Modal from "@/components/Modal";
 import ErrorModal from "@/components/ErrorModal";
 import ConfirmModal from "@/components/ConfirmModal";
 import Pagination from "@/components/Pagination";
+import ImageUpload from "@/components/ImageUpload";
 
 const API_ENDPOINTS = {
   PRODUTOS_BASE: "/produtos",
@@ -20,6 +21,7 @@ const FORM_INITIAL_STATE = {
   nome: "",
   preco: "",
   estoque: "",
+  foto: "",
 };
 
 /**
@@ -154,6 +156,7 @@ export default function ProductsPage() {
           nome: formData.nome,
           preco: parseFloat(formData.preco),
           estoque: parseInt(formData.estoque),
+          foto: formData.foto || null,
         }),
       });
 
@@ -301,6 +304,9 @@ export default function ProductsPage() {
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
+                  Foto
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
                   Nome
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
@@ -320,6 +326,17 @@ export default function ProductsPage() {
                   key={product.codProduto}
                   className="hover:bg-gray-50 transition-colors"
                 >
+                  <td className="px-6 py-4 text-sm">
+                    {product.foto ? (
+                      <img
+                        src={product.foto}
+                        alt={product.nome}
+                        className="h-12 w-12 object-cover rounded"
+                      />
+                    ) : (
+                      <span className="text-gray-400 text-xs">Sem foto</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
                     {product.nome}
                   </td>
@@ -392,6 +409,13 @@ export default function ProductsPage() {
             onChange={(e) =>
               setFormData({ ...formData, nome: e.target.value })
             }
+          />
+          <ImageUpload
+            onImageSelect={(base64) =>
+              setFormData({ ...formData, foto: base64 })
+            }
+            currentImage={formData.foto}
+            label="Foto do produto"
           />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

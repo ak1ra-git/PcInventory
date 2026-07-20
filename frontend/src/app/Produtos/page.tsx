@@ -13,7 +13,7 @@ const API_ENDPOINTS = {
   PRODUTOS_BASE: "/produtos",
 };
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 const FORM_INITIAL_STATE = {
   nome: "",

@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/api";
 import Input from "@/components/Input";
 import Modal from "@/components/Modal";
 import ErrorModal from "@/components/ErrorModal";
+import ConfirmModal from "@/components/ConfirmModal";
 
 const API_ENDPOINTS = {
   PRODUTOS: "/produtos?pagina=1&tamanho=50",
@@ -51,6 +52,10 @@ export default function ProductsPage() {
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [novoEstoque, setNovoEstoque] = useState("");
   const [errorModal, setErrorModal] = useState({ isOpen: false, message: "" });
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    productId: null as number | null,
+  });
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -144,13 +149,22 @@ export default function ProductsPage() {
   };
 
   /**
+   * Abre modal de confirmação para deletar produto
+   */
+  const handleOpenDeleteConfirm = (productId: number) => {
+    setConfirmModal({ isOpen: true, productId });
+  };
+
+  /**
    * Deleta um produto após confirmação do usuário
    */
-  const handleDeleteProduct = async (productId: number) => {
-    if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+  const handleConfirmDelete = async () => {
+    const productId = confirmModal.productId;
+    if (!productId) return;
 
     try {
       setDeletingId(productId);
+      setConfirmModal({ isOpen: false, productId: null });
       await apiFetch(`${API_ENDPOINTS.PRODUTOS_BASE}/${productId}`, {
         method: "DELETE",
       });
@@ -301,7 +315,7 @@ export default function ProductsPage() {
                       📦 Estoque
                     </button>
                     <button
-                      onClick={() => handleDeleteProduct(product.codProduto)}
+                      onClick={() => handleOpenDeleteConfirm(product.codProduto)}
                       disabled={deletingId === product.codProduto}
                       className="text-red-600 hover:text-red-700 disabled:text-gray-400 font-medium transition-colors"
                     >
@@ -397,6 +411,16 @@ export default function ProductsPage() {
           </button>
         </form>
       </Modal>
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title="Deletar Produto?"
+        message="Tem certeza que deseja excluir este produto?"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, productId: null })}
+        isLoading={deletingId !== null}
+      />
 
       {/* Error Modal */}
       <ErrorModal

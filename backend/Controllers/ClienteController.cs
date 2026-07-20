@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using PcInventory.DTOs;
 using PcInventory.Interfaces;
 using PcInventory.Models;
 
@@ -19,11 +20,33 @@ namespace PcInventory.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObterTodos()
+        public async Task<IActionResult> ObterTodos(int pagina = 1, int tamanho = 10)
         {
-            // Retorna todos os clientes cadastrados.
-            var clientes = await _clienteService.ObterTodosAsync();
-            return Ok(clientes);
+            // Validação
+            if (pagina < 1) pagina = 1;
+            if (tamanho < 1) tamanho = 10;
+
+            // Obtém todos os clientes
+            var todosClientes = await _clienteService.ObterTodosAsync();
+            var totalItens = todosClientes.Count;
+            var totalPaginas = (int)Math.Ceiling(totalItens / (double)tamanho);
+
+            // Calcula offset e busca clientes da página
+            var offset = (pagina - 1) * tamanho;
+            var clientesPaginados = todosClientes
+                .Skip(offset)
+                .Take(tamanho)
+                .ToList();
+
+            var resposta = new PaginatedResponse<Cliente>
+            {
+                Data = clientesPaginados,
+                TotalPaginas = totalPaginas,
+                PaginaAtual = pagina,
+                TotalItens = totalItens
+            };
+
+            return Ok(resposta);
         }
 
         [HttpGet("{id}")]

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PcInventory.DTOs;
 using PcInventory.Interfaces;
 using PcInventory.Models;
 
@@ -18,11 +19,33 @@ namespace PcInventory.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObterTodos()
+        public async Task<IActionResult> ObterTodos(int pagina = 1, int tamanho = 10)
         {
-            // Retorna a lista completa de produtos cadastrados.
-            var produtos = await _produtoService.ObterTodosAsync();
-            return Ok(produtos);
+            // Validação
+            if (pagina < 1) pagina = 1;
+            if (tamanho < 1) tamanho = 10;
+
+            // Obtém todos os produtos
+            var todosProdutos = await _produtoService.ObterTodosAsync();
+            var totalItens = todosProdutos.Count;
+            var totalPaginas = (int)Math.Ceiling(totalItens / (double)tamanho);
+
+            // Calcula offset e busca produtos da página
+            var offset = (pagina - 1) * tamanho;
+            var produtosPaginados = todosProdutos
+                .Skip(offset)
+                .Take(tamanho)
+                .ToList();
+
+            var resposta = new PaginatedResponse<Produto>
+            {
+                Data = produtosPaginados,
+                TotalPaginas = totalPaginas,
+                PaginaAtual = pagina,
+                TotalItens = totalItens
+            };
+
+            return Ok(resposta);
         }
 
         [HttpGet("{id}")]

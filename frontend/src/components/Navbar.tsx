@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { logout } from "@/lib/auth";
 
 interface NavItem {
@@ -55,6 +55,20 @@ function NavLink({
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Verifica se tem token no sessionStorage
+    const token = sessionStorage.getItem("accessToken");
+    setIsAuthenticated(!!token);
+    setIsLoading(false);
+  }, []);
+
+  // Não renderiza navbar enquanto tá carregando ou se não estiver autenticado
+  if (isLoading || !isAuthenticated) {
+    return null;
+  }
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";

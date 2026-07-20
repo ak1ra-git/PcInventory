@@ -11,5 +11,6 @@ namespace PcInventory.Interfaces
         Task<int> AdicionarAsync(Cliente cliente);
         Task<bool> AtualizarAsync(Cliente cliente);
         Task<bool> RemoverAsync(int id);
+        Task<bool> TemPedidosVinculadosAsync(int clienteId);
     }
 }

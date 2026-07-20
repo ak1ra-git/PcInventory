@@ -10,5 +10,6 @@ namespace PcInventory.Interfaces
         Task<int> AdicionarAsync(Pedido pedido);
         Task<bool> AtualizarAsync(Pedido pedido);
         Task<bool> DeletarAsync(int id);
+        Task<bool> CancelarPedidoAsync(int codPedido);
     }
 }

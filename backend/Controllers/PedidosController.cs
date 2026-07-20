@@ -81,5 +81,22 @@ namespace PcInventory.Controllers
                 return NotFound(new { mensagem = $"Pedido com ID {id} não encontrado." });
             return NoContent();
         }
+
+        [HttpPost("{id}/cancelar")]
+        public async Task<ActionResult> Cancelar(int id)
+        {
+            try
+            {
+                var cancelado = await _pedidoService.CancelarPedidoAsync(id);
+                if (!cancelado)
+                    return NotFound(new { mensagem = $"Pedido com ID {id} não encontrado." });
+
+                return Ok(new { mensagem = $"Pedido {id} cancelado com sucesso. Estoque restaurado." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensagem = $"Erro ao cancelar pedido: {ex.Message}" });
+            }
+        }
     }
 }

@@ -77,5 +77,15 @@ namespace PcInventory.Repositories
             var rowsAffected = await connection.ExecuteAsync(sql, new { Id = id });
             return rowsAffected > 0; // true se removeu algum registro.
         }
+
+        public async Task<bool> TemItensVinculadosAsync(int produtoId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            const string sql = "SELECT COUNT(*) FROM ItensPedidos WHERE CodProduto = @ProdutoId";
+            var count = await connection.ExecuteScalarAsync<int>(sql, new { ProdutoId = produtoId });
+            return count > 0;
+        }
     }
 }

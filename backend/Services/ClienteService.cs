@@ -42,6 +42,9 @@ namespace PcInventory.Services
 
         public async Task<bool> DeletarAsync(int id)
         {
+            if (await _clienteRepository.TemPedidosVinculadosAsync(id))
+                throw new ArgumentException("Não é possível deletar um cliente que possui pedidos vinculados.");
+
             return await _clienteRepository.RemoverAsync(id);
         }
 

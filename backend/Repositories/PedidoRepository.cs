@@ -52,8 +52,15 @@ namespace PcInventory.Repositories
         {
             using var connection = ConnectionFactory.CreateConnection();
             await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction();
+
+            var sqlItens = "DELETE FROM ItensPedidos WHERE CodPedido = @CodPedido";
+            await connection.ExecuteAsync(sqlItens, new { CodPedido = id }, transaction);
+
             var sql = "DELETE FROM Pedido WHERE CodPedido = @CodPedido";
-            var linhasAfetadas = await connection.ExecuteAsync(sql, new { CodPedido = id });
+            var linhasAfetadas = await connection.ExecuteAsync(sql, new { CodPedido = id }, transaction);
+
+            transaction.Commit();
             return linhasAfetadas > 0;
         }
     }

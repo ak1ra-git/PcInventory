@@ -1,5 +1,7 @@
 using PcInventory.Models;
 using PcInventory.Interfaces;
+using PcInventory.Database;
+using Dapper;
 
 namespace PcInventory.Services
 {
@@ -8,10 +10,14 @@ namespace PcInventory.Services
     public class PedidoService : IPedidoService
     {
         private readonly IPedidoRepository _pedidoRepository;
+        private readonly ConnectionFactory _connectionFactory;
+        private readonly ILogger<PedidoService> _logger;
 
-        public PedidoService(IPedidoRepository pedidoRepository)
+        public PedidoService(IPedidoRepository pedidoRepository, ConnectionFactory connectionFactory, ILogger<PedidoService> logger)
         {
             _pedidoRepository = pedidoRepository;
+            _connectionFactory = connectionFactory;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<Pedido>> ObterTodosAsync()
@@ -54,6 +60,52 @@ namespace PcInventory.Services
         public async Task<bool> DeletarAsync(int id)
         {
             return await _pedidoRepository.DeletarAsync(id);
+        }
+
+        public async Task<bool> CancelarPedidoAsync(int codPedido)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                // Inicia transação para garantir atomicidade
+                using var transaction = connection.BeginTransaction();
+
+                // 1. Atualiza status do pedido para Cancelado
+                const string updatePedidoQuery = @"
+                    UPDATE Pedido
+                    SET Status = 'Cancelado'
+                    WHERE CodPedido = @CodPedido
+                ";
+                await connection.ExecuteAsync(updatePedidoQuery, new { CodPedido = codPedido }, transaction);
+
+                // 2. Devolve o estoque para cada produto do pedido
+                const string rollbackEstoqueQuery = @"
+                    UPDATE Produtos
+                    SET Estoque = Estoque + (
+                        SELECT ISNULL(SUM(Quantidade), 0)
+                        FROM ItensPedidos
+                        WHERE CodPedido = @CodPedido
+                        AND CodProduto = Produtos.CodProduto
+                    )
+                    WHERE CodProduto IN (
+                        SELECT DISTINCT CodProduto
+                        FROM ItensPedidos
+                        WHERE CodPedido = @CodPedido
+                    )
+                ";
+                await connection.ExecuteAsync(rollbackEstoqueQuery, new { CodPedido = codPedido }, transaction);
+
+                transaction.Commit();
+                _logger.LogInformation($"Pedido {codPedido} cancelado com sucesso. Estoque restaurado.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Erro ao cancelar pedido {codPedido}: {ex.Message}");
+                throw;
+            }
         }
     }
 }

@@ -10,5 +10,6 @@ namespace PcInventory.Interfaces
         Task<int> AdicionarAsync(Produto produto); // retorna o ID gerado pelo banco
         Task<bool> AtualizarAsync(Produto produto); // retorna true se atualizou, false se não encontrou
         Task<bool> RemoverAsync(int id); // retorna true se removeu, false se não encontrou
+        Task<bool> TemItensVinculadosAsync(int produtoId);
     }
 }

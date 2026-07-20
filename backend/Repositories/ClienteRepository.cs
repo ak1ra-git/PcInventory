@@ -68,5 +68,15 @@ namespace PcInventory.Repositories
             var linhasAfetadas = await connection.ExecuteAsync(sql, new { Id = id });
             return linhasAfetadas > 0;
         }
+
+        public async Task<bool> TemPedidosVinculadosAsync(int clienteId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            const string sql = "SELECT COUNT(*) FROM Pedido WHERE CodCliente = @ClienteId";
+            var count = await connection.ExecuteScalarAsync<int>(sql, new { ClienteId = clienteId });
+            return count > 0;
+        }
     }
 }

@@ -65,6 +65,9 @@ namespace PcInventory.Services
             if (id <= 0)
                 throw new ArgumentException("O ID do produto é inválido.");
 
+            if (await _produtoRepository.TemItensVinculadosAsync(id))
+                throw new ArgumentException("Não é possível deletar um produto que possui itens em pedidos vinculados.");
+
             return await _produtoRepository.RemoverAsync(id);
         }
     }

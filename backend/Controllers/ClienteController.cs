@@ -86,12 +86,19 @@ namespace PcInventory.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Deletar(int id)
         {
-            var deletado = await _clienteService.DeletarAsync(id);
+            try
+            {
+                var deletado = await _clienteService.DeletarAsync(id);
 
-            if (!deletado)
-                return NotFound(new { mensagem = $"Cliente com ID {id} não encontrado." });
+                if (!deletado)
+                    return NotFound(new { mensagem = $"Cliente com ID {id} não encontrado." });
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { mensagem = ex.Message });
+            }
         }
     }
 }

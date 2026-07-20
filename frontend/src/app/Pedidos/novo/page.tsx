@@ -6,10 +6,12 @@ import { Produto, Cliente, ItemCarrinho } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
 
 const API_ENDPOINTS = {
-  PRODUTOS: "/produtos?pagina=1&tamanho=100",
-  CLIENTES: "/clientes?pagina=1&tamanho=100",
+  PRODUTOS_BASE: "/produtos",
+  CLIENTES_BASE: "/clientes",
   PEDIDOS: "/pedidos",
 };
+
+const PAGE_SIZE = 5;
 
 /**
  * Extrai mensagem de erro de diferentes tipos de exceção
@@ -51,6 +53,8 @@ function NewOrderContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [currentProductPage, setCurrentProductPage] = useState(1);
+  const [totalProductPages, setTotalProductPages] = useState(1);
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -59,15 +63,19 @@ function NewOrderContent() {
 
     const fetchInitialData = async () => {
       try {
+        const productsUrl = `${API_ENDPOINTS.PRODUTOS_BASE}?pagina=${currentProductPage}&tamanho=${PAGE_SIZE}`;
+        const clientsUrl = `${API_ENDPOINTS.CLIENTES_BASE}?pagina=1&tamanho=100`;
+
         const [productsRes, clientsRes] = await Promise.all([
-          apiFetch<{ data: Produto[] }>(API_ENDPOINTS.PRODUTOS),
-          apiFetch<{ data: Cliente[] }>(API_ENDPOINTS.CLIENTES),
+          apiFetch<{ data: Produto[]; totalPaginas: number }>(productsUrl),
+          apiFetch<{ data: Cliente[] }>(clientsUrl),
         ]);
 
         const productsData = productsRes?.data || [];
         const clientsData = clientsRes?.data || [];
 
         setProducts(productsData);
+        setTotalProductPages(productsRes?.totalPaginas || 1);
         setClients(clientsData);
 
         if (clientCnpjFromUrl) {
@@ -84,7 +92,7 @@ function NewOrderContent() {
     };
 
     fetchInitialData();
-  }, [clientCnpjFromUrl]);
+  }, [clientCnpjFromUrl, currentProductPage]);
 
   useEffect(() => {
     if (shouldRedirect) {
@@ -331,6 +339,52 @@ function NewOrderContent() {
                   </button>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Paginação de Produtos */}
+          {!loading && products.length > 0 && totalProductPages > 1 && (
+            <div className="mt-8">
+              <div className="flex justify-center items-center gap-2">
+                <button
+                  onClick={() => setCurrentProductPage(currentProductPage - 1)}
+                  disabled={currentProductPage === 1 || loading}
+                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 disabled:bg-gray-200 text-gray-900 rounded-lg font-medium"
+                >
+                  ← Anterior
+                </button>
+
+                <div className="flex gap-1">
+                  {Array.from({ length: totalProductPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentProductPage(page)}
+                        disabled={loading}
+                        className={`w-10 h-10 rounded-lg font-medium ${
+                          currentProductPage === page
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200 hover:bg-gray-300 text-gray-900"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setCurrentProductPage(currentProductPage + 1)}
+                  disabled={currentProductPage === totalProductPages || loading}
+                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 disabled:bg-gray-200 text-gray-900 rounded-lg font-medium"
+                >
+                  Próximo →
+                </button>
+
+                <span className="ml-4 text-sm text-gray-600">
+                  Página {currentProductPage} de {totalProductPages}
+                </span>
+              </div>
             </div>
           )}
         </div>

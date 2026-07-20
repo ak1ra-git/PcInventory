@@ -10,4 +10,6 @@ public class Produto
     public decimal Preco { get; set; } // Preço unitário do produto.
 
     public int Estoque { get; set; } // Quantidade disponível em estoque.
+
+    public string? Foto { get; set; } // Foto do produto (Base64 ou URL).
 }

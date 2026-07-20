@@ -8,6 +8,7 @@ export interface Produto {
   nome: string;
   preco: number;
   estoque: number;
+  foto?: string; // Base64 ou URL da imagem
 }
 
 export interface Cliente {

@@ -59,7 +59,47 @@ namespace PcInventory.Services
 
         public async Task<bool> DeletarAsync(int id)
         {
-            return await _pedidoRepository.DeletarAsync(id);
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                await connection.OpenAsync();
+
+                using var transaction = connection.BeginTransaction();
+
+                // 1. Devolve estoque dos produtos do pedido
+                const string rollbackEstoqueQuery = @"
+                    UPDATE Produtos
+                    SET Estoque = Estoque + (
+                        SELECT ISNULL(SUM(Quantidade), 0)
+                        FROM ItensPedidos
+                        WHERE CodPedido = @CodPedido
+                        AND CodProduto = Produtos.CodProduto
+                    )
+                    WHERE CodProduto IN (
+                        SELECT DISTINCT CodProduto
+                        FROM ItensPedidos
+                        WHERE CodPedido = @CodPedido
+                    )
+                ";
+                await connection.ExecuteAsync(rollbackEstoqueQuery, new { CodPedido = id }, transaction);
+
+                // 2. Deleta items do pedido
+                const string deleteItensQuery = "DELETE FROM ItensPedidos WHERE CodPedido = @CodPedido";
+                await connection.ExecuteAsync(deleteItensQuery, new { CodPedido = id }, transaction);
+
+                // 3. Deleta o pedido
+                const string deletePedidoQuery = "DELETE FROM Pedido WHERE CodPedido = @CodPedido";
+                var linhasAfetadas = await connection.ExecuteAsync(deletePedidoQuery, new { CodPedido = id }, transaction);
+
+                transaction.Commit();
+                _logger.LogInformation($"Pedido {id} deletado com sucesso. Estoque restaurado.");
+                return linhasAfetadas > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Erro ao deletar pedido {id}: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<bool> CancelarPedidoAsync(int codPedido)

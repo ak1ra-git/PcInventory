@@ -37,8 +37,22 @@ builder.Services.AddScoped<IItensPedidoRepository, ItensPedidoRepository>();
 builder.Services.AddScoped<IItensPedidoService, ItensPedidoService>();
 
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<AuthService>();
 
-// TODO: Reativar autenticação JWT quando o login estiver pronto
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException("JWT Secret Key is not configured.")))
+        };
+    });
 
 // Define uma política de CORS liberando o front-end Next.js
 builder.Services.AddCors(options =>
@@ -63,9 +77,8 @@ app.UseHttpsRedirection();
 // Aplica a política de CORS definida anteriormente, permitindo que o front-end acesse a API.
 app.UseCors("PermitirFrontend");
 
-// TODO: Reativar autenticação e autorização quando o login estiver pronto
-// app.UseAuthentication();
-// app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Registra os controllers como endpoints da API.
 app.MapControllers();

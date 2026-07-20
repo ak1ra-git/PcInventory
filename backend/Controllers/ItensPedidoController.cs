@@ -6,6 +6,7 @@ namespace PcInventory.Controllers
 {
     [ApiController]
     [Route("api/pedidos/{codPedido}/itens")]
+    [Authorize]
     public class ItensPedidoController : ControllerBase
     {
         private readonly IItensPedidoService _itensPedidoService;

@@ -7,6 +7,7 @@ namespace PcInventory.Controllers
 {
     [ApiController]
     [Route("api/produtos")]
+    [Authorize]
     public class ProdutoController : ControllerBase
     {
         private readonly IProdutoService _produtoService;

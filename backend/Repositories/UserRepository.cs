@@ -26,6 +26,7 @@ public class UserRepository
                 SELECT
                     CodUsuario as Id,
                     Usuario,
+                    Nome,
                     SenhaHash as PasswordHash,
                     DataCadastro as CreatedAt
                 FROM Usuario

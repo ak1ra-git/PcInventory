@@ -16,8 +16,8 @@ interface AuthResponse {
  */
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [usuario, setUsuario] = useState("");
+  const [senha, setSenha] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,8 +28,8 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
 
-    if (!email.trim() || !password.trim()) {
-      setError("Email e senha são obrigatórios");
+    if (!usuario.trim() || !senha.trim()) {
+      setError("Usuário e senha são obrigatórios");
       return;
     }
 
@@ -37,12 +37,12 @@ export default function LoginPage() {
       setIsLoading(true);
       const response = await apiFetch<AuthResponse>("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ usuario, senha }),
       });
 
       sessionStorage.setItem("accessToken", response.accessToken);
       sessionStorage.setItem("refreshToken", response.refreshToken);
-      sessionStorage.setItem("userEmail", email);
+      sessionStorage.setItem("userUsuario", usuario);
 
       router.replace("/");
     } catch (err) {
@@ -78,12 +78,12 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <Input
-              label="Email"
-              type="email"
-              placeholder="seu@email.com"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              label="Usuario"
+              type="text"
+              placeholder="seu.usuario"
+              autoComplete="username"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
               disabled={isLoading}
             />
 
@@ -92,8 +92,8 @@ export default function LoginPage() {
               type="password"
               placeholder="••••••••"
               autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
               disabled={isLoading}
             />
 
@@ -113,8 +113,8 @@ export default function LoginPage() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
             <p className="text-sm font-semibold text-black mb-2">Usuários de teste:</p>
             <div className="text-xs text-gray-700 space-y-1">
-              <p>📧 admin@pcinventory.com / admin123</p>
-              <p>📧 user@pcinventory.com / user123</p>
+              <p>👤 MateusNascimento / mateus123</p>
+              <p>👤 AkiraOliveira / akira123</p>
             </div>
           </div>
         </div>
@@ -122,4 +122,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

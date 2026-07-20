@@ -26,15 +26,19 @@ public class UserRepository
                 SELECT
                     CodUsuario as Id,
                     Usuario,
-                    Nome,
+                    Nome as Name,
                     SenhaHash as PasswordHash,
                     DataCadastro as CreatedAt
                 FROM Usuario
                 WHERE Usuario = @Usuario
             ";
 
-            return await connection.QueryFirstOrDefaultAsync<User>(query,
+            var user = await connection.QueryFirstOrDefaultAsync<User>(query,
                 new { Usuario = usuario });
+
+            _logger.LogInformation($"Usuário encontrado: {user?.Usuario}, Nome: {user?.Name ?? "NULL"}");
+
+            return user;
         }
         catch (Exception ex)
         {

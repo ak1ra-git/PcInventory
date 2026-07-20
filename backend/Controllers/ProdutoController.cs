@@ -26,7 +26,7 @@ namespace PcInventory.Controllers
             if (tamanho < 1) tamanho = 10;
 
             // Obtém todos os produtos
-            var todosProdutos = await _produtoService.ObterTodosAsync();
+            var todosProdutos = (await _produtoService.ObterTodosAsync()).ToList();
             var totalItens = todosProdutos.Count;
             var totalPaginas = (int)Math.Ceiling(totalItens / (double)tamanho);
 

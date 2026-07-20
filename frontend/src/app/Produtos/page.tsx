@@ -7,11 +7,13 @@ import Input from "@/components/Input";
 import Modal from "@/components/Modal";
 import ErrorModal from "@/components/ErrorModal";
 import ConfirmModal from "@/components/ConfirmModal";
+import Pagination from "@/components/Pagination";
 
 const API_ENDPOINTS = {
-  PRODUTOS: "/produtos?pagina=1&tamanho=50",
   PRODUTOS_BASE: "/produtos",
 };
+
+const PAGE_SIZE = 10;
 
 const FORM_INITIAL_STATE = {
   nome: "",
@@ -43,6 +45,8 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(FORM_INITIAL_STATE);
   const [formError, setFormError] = useState<string | null>(null);
@@ -58,14 +62,19 @@ export default function ProductsPage() {
   });
 
   useEffect(() => {
-    // eslint-disable-next-line
     setLoading(true);
     setError(null);
 
     const fetchProducts = async () => {
       try {
-        const response = await apiFetch<{ data: Produto[] }>(API_ENDPOINTS.PRODUTOS);
+        const url = `${API_ENDPOINTS.PRODUTOS_BASE}?pagina=${currentPage}&tamanho=${PAGE_SIZE}`;
+        const response = await apiFetch<{
+          data: Produto[];
+          totalPaginas: number;
+        }>(url);
+
         setProducts(response?.data || []);
+        setTotalPages(response?.totalPaginas || 1);
       } catch (err) {
         setErrorModal({
           isOpen: true,
@@ -77,15 +86,21 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-  }, []);
+  }, [currentPage]);
 
   /**
-   * Recarrega lista de produtos
+   * Recarrega lista de produtos da página atual
    */
   const reloadProducts = async () => {
     try {
-      const response = await apiFetch<{ data: Produto[] }>(API_ENDPOINTS.PRODUTOS);
+      const url = `${API_ENDPOINTS.PRODUTOS_BASE}?pagina=${currentPage}&tamanho=${PAGE_SIZE}`;
+      const response = await apiFetch<{
+        data: Produto[];
+        totalPaginas: number;
+      }>(url);
+
       setProducts(response?.data || []);
+      setTotalPages(response?.totalPaginas || 1);
     } catch (err) {
       setError(getErrorMessage(err, "Erro ao carregar produtos"));
     }
@@ -327,6 +342,16 @@ export default function ProductsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && products.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          isLoading={loading}
+        />
       )}
 
       {/* New Product Modal */}

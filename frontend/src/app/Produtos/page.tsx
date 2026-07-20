@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Produto } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
+import { maskCurrency } from "@/lib/masks";
 import Input from "@/components/Input";
 import Modal from "@/components/Modal";
 import ErrorModal from "@/components/ErrorModal";
@@ -375,13 +376,14 @@ export default function ProductsPage() {
           />
           <Input
             label="Preço"
-            type="number"
-            step="0.01"
-            placeholder="150.00"
-            value={formData.preco}
-            onChange={(e) =>
-              setFormData({ ...formData, preco: e.target.value })
-            }
+            type="text"
+            inputMode="decimal"
+            placeholder="R$ 0,00"
+            value={maskCurrency(formData.preco)}
+            onChange={(e) => {
+              const numbers = e.target.value.replace(/\D/g, "");
+              setFormData({ ...formData, preco: numbers });
+            }}
           />
           <Input
             label="Estoque"

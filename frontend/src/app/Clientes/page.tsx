@@ -8,11 +8,13 @@ import Input from "@/components/Input";
 import Modal from "@/components/Modal";
 import ErrorModal from "@/components/ErrorModal";
 import ConfirmModal from "@/components/ConfirmModal";
+import Pagination from "@/components/Pagination";
 
 const API_ENDPOINTS = {
-  CLIENTES: "/clientes?pagina=1&tamanho=50",
   CLIENTES_BASE: "/clientes",
 };
+
+const PAGE_SIZE = 5;
 
 const FORM_INITIAL_STATE = {
   nome: "",
@@ -41,6 +43,8 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(FORM_INITIAL_STATE);
   const [formError, setFormError] = useState<string | null>(null);
@@ -53,14 +57,19 @@ export default function ClientsPage() {
   });
 
   useEffect(() => {
-    // eslint-disable-next-line
     setLoading(true);
     setError(null);
 
     const fetchClients = async () => {
       try {
-        const response = await apiFetch<{ data: Cliente[] }>(API_ENDPOINTS.CLIENTES);
+        const url = `${API_ENDPOINTS.CLIENTES_BASE}?pagina=${currentPage}&tamanho=${PAGE_SIZE}`;
+        const response = await apiFetch<{
+          data: Cliente[];
+          totalPaginas: number;
+        }>(url);
+
         setClients(response?.data || []);
+        setTotalPages(response?.totalPaginas || 1);
       } catch (err) {
         setErrorModal({
           isOpen: true,
@@ -72,15 +81,21 @@ export default function ClientsPage() {
     };
 
     fetchClients();
-  }, []);
+  }, [currentPage]);
 
   /**
-   * Recarrega lista de clientes
+   * Recarrega lista de clientes da página atual
    */
   const reloadClients = async () => {
     try {
-      const response = await apiFetch<{ data: Cliente[] }>(API_ENDPOINTS.CLIENTES);
+      const url = `${API_ENDPOINTS.CLIENTES_BASE}?pagina=${currentPage}&tamanho=${PAGE_SIZE}`;
+      const response = await apiFetch<{
+        data: Cliente[];
+        totalPaginas: number;
+      }>(url);
+
       setClients(response?.data || []);
+      setTotalPages(response?.totalPaginas || 1);
     } catch (err) {
       setErrorModal({
         isOpen: true,
@@ -237,6 +252,16 @@ export default function ClientsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && clients.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          isLoading={loading}
+        />
       )}
 
       {/* New Client Modal */}

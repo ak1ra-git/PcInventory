@@ -22,7 +22,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="pt-BR">
       <body className="bg-gray-50">
         <NavbarWrapper />
-        <main className="pt-20 min-h-screen">{children}</main>
+        <main className="min-h-screen">{children}</main>
       </body>
     </html>
   );

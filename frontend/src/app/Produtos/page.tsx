@@ -5,6 +5,7 @@ import { Produto } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
 import Input from "@/components/Input";
 import Modal from "@/components/Modal";
+import ErrorModal from "@/components/ErrorModal";
 
 const API_ENDPOINTS = {
   PRODUTOS: "/produtos?pagina=1&tamanho=50",
@@ -46,6 +47,10 @@ export default function ProductsPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [isEstoqueModalOpen, setIsEstoqueModalOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+  const [novoEstoque, setNovoEstoque] = useState("");
+  const [errorModal, setErrorModal] = useState({ isOpen: false, message: "" });
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -57,7 +62,10 @@ export default function ProductsPage() {
         const response = await apiFetch<{ data: Produto[] }>(API_ENDPOINTS.PRODUTOS);
         setProducts(response?.data || []);
       } catch (err) {
-        setError(getErrorMessage(err, "Erro ao carregar produtos"));
+        setErrorModal({
+          isOpen: true,
+          message: getErrorMessage(err, "Erro ao carregar produtos"),
+        });
       } finally {
         setLoading(false);
       }
@@ -126,7 +134,10 @@ export default function ProductsPage() {
       setFormData(FORM_INITIAL_STATE);
       await reloadProducts();
     } catch (err) {
-      setFormError(getErrorMessage(err, "Erro ao criar produto"));
+      setErrorModal({
+        isOpen: true,
+        message: getErrorMessage(err, "Erro ao criar produto"),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -145,9 +156,65 @@ export default function ProductsPage() {
       });
       await reloadProducts();
     } catch (err) {
-      setError(getErrorMessage(err, "Erro ao deletar produto"));
+      setErrorModal({
+        isOpen: true,
+        message: getErrorMessage(err, "Erro ao deletar produto"),
+      });
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  /**
+   * Abre modal para atualizar estoque
+   */
+  const handleOpenEstoqueModal = (productId: number, estoqueAtual: number) => {
+    setSelectedProductId(productId);
+    setNovoEstoque(estoqueAtual.toString());
+    setFormError(null);
+    setIsEstoqueModalOpen(true);
+  };
+
+  /**
+   * Atualiza estoque do produto
+   */
+  const handleUpdateEstoque = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+
+    if (!selectedProductId) return;
+
+    if (!novoEstoque || isNaN(parseInt(novoEstoque))) {
+      setFormError("Estoque inválido");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const product = products.find((p) => p.codProduto === selectedProductId);
+      if (!product) return;
+
+      await apiFetch(`${API_ENDPOINTS.PRODUTOS_BASE}/${selectedProductId}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          codProduto: selectedProductId,
+          nome: product.nome,
+          preco: product.preco,
+          estoque: parseInt(novoEstoque),
+        }),
+      });
+
+      setIsEstoqueModalOpen(false);
+      setSelectedProductId(null);
+      setNovoEstoque("");
+      await reloadProducts();
+    } catch (err) {
+      setErrorModal({
+        isOpen: true,
+        message: getErrorMessage(err, "Erro ao atualizar estoque"),
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -174,10 +241,6 @@ export default function ProductsPage() {
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
           <p className="text-white mt-4">Carregando produtos...</p>
-        </div>
-      ) : error ? (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-          {error}
         </div>
       ) : products.length === 0 ? (
         <div className="bg-gray-100 rounded-lg p-12 text-center">
@@ -225,7 +288,18 @@ export default function ProductsPage() {
                       {product.estoque}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm">
+                  <td className="px-6 py-4 text-sm flex gap-3">
+                    <button
+                      onClick={() =>
+                        handleOpenEstoqueModal(
+                          product.codProduto,
+                          product.estoque
+                        )
+                      }
+                      className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                    >
+                      📦 Estoque
+                    </button>
                     <button
                       onClick={() => handleDeleteProduct(product.codProduto)}
                       disabled={deletingId === product.codProduto}
@@ -291,6 +365,45 @@ export default function ProductsPage() {
           </button>
         </form>
       </Modal>
+
+      {/* Update Estoque Modal */}
+      <Modal
+        isOpen={isEstoqueModalOpen}
+        onClose={() => {
+          setIsEstoqueModalOpen(false);
+          setSelectedProductId(null);
+          setNovoEstoque("");
+          setFormError(null);
+        }}
+        title="Atualizar Estoque"
+      >
+        <form onSubmit={handleUpdateEstoque} className="space-y-4">
+          <Input
+            label="Novo Estoque"
+            type="number"
+            placeholder="0"
+            value={novoEstoque}
+            onChange={(e) => setNovoEstoque(e.target.value)}
+          />
+          {formError && (
+            <p className="text-red-500 text-sm">{formError}</p>
+          )}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            {isSubmitting ? "Atualizando..." : "Atualizar Estoque"}
+          </button>
+        </form>
+      </Modal>
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.message}
+        onClose={() => setErrorModal({ isOpen: false, message: "" })}
+      />
     </div>
   );
 }

@@ -61,6 +61,12 @@ export default function ProductsPage() {
     isOpen: false,
     productId: null as number | null,
   });
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filtra produtos por nome
+  const filteredProducts = products.filter((product) =>
+    product.nome.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -266,6 +272,15 @@ export default function ProductsPage() {
         </button>
       </div>
 
+      {/* Search */}
+      <div className="mb-8">
+        <Input
+          placeholder="🔍 Buscar produto..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       {/* Products List */}
       {loading ? (
         <div className="text-center py-12">
@@ -275,6 +290,10 @@ export default function ProductsPage() {
       ) : products.length === 0 ? (
         <div className="bg-gray-100 rounded-lg p-12 text-center">
           <p className="text-white">Nenhum produto cadastrado</p>
+        </div>
+      ) : filteredProducts.length === 0 ? (
+        <div className="bg-gray-100 rounded-lg p-12 text-center">
+          <p className="text-white">Nenhum produto encontrado com "{searchTerm}"</p>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -296,7 +315,7 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <tr
                   key={product.codProduto}
                   className="hover:bg-gray-50 transition-colors"
@@ -346,7 +365,7 @@ export default function ProductsPage() {
       )}
 
       {/* Pagination */}
-      {!loading && products.length > 0 && (
+      {!loading && products.length > 0 && filteredProducts.length > 0 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

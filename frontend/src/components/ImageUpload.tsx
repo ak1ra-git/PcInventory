@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 
 interface ImageUploadProps {
   onImageSelect: (base64: string) => void;
@@ -56,9 +57,12 @@ export default function ImageUpload({
       >
         {preview ? (
           <div className="flex flex-col items-center gap-2">
-            <img
+            <Image
               src={preview}
               alt="Preview"
+              width={128}
+              height={128}
+              unoptimized
               className="h-32 w-32 object-cover rounded"
             />
             <p className="text-sm text-gray-600">Clique para alterar imagem</p>

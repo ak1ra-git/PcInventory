@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Produto } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
 import { maskCurrency } from "@/lib/masks";
@@ -328,9 +329,12 @@ export default function ProductsPage() {
                 >
                   <td className="px-6 py-4 text-sm">
                     {product.foto ? (
-                      <img
+                      <Image
                         src={product.foto}
                         alt={product.nome}
+                        width={48}
+                        height={48}
+                        unoptimized
                         className="h-12 w-12 object-cover rounded"
                       />
                     ) : (
